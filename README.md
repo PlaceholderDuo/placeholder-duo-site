@@ -34,13 +34,15 @@ Open `index.html` — everything is in one file: HTML + CSS. No build step neede
 
 | What | Search for | Replace with |
 |------|-----------|-------------|
-| Venmo link | `venmo.com/placeholderduo` | Your Venmo handle |
-| Cash App link | `cash.app/$placeholderduo` | Your Cash App tag |
+| Venmo deep link | `venmo://paycharge?...recipient=placeholderduo` | Your Venmo handle |
+| Cash App deep link | `cashapp://cash.app/$placeholderduo` | Your Cash App tag |
 | Instagram link | `instagram.com/placeholderduo` | Your handle |
 | TikTok link | `tiktok.com/@placeholderduo` | Your handle |
 | YouTube link | `youtube.com/@placeholderduo` | Your handle |
 | Facebook link | `facebook.com/placeholderduo` | Your handle |
 | Band name | `Placeholder Duo` | Actual band name |
 | Logo | `logo.png` | New logo file |
+| Venmo handle text | `@placeholderduo` | Your Venmo handle |
+| Cash App handle text | `$placeholderduo` | Your Cash App tag |
 
 Copy a `.btn--secondary` block in `index.html`, swap the SVG, href, and label.
