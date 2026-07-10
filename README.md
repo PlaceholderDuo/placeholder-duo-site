@@ -43,27 +43,4 @@ Open `index.html` — everything is in one file: HTML + CSS. No build step neede
 | Band name | `Placeholder Duo` | Actual band name |
 | Logo | `logo.png` | New logo file |
 
-## Adding New Buttons
-
 Copy a `.btn--secondary` block in `index.html`, swap the SVG, href, and label.
-
-## Test Locally
-
-```bash
-python3 -m http.server 8000
-# Open http://localhost:8000
-```
-
-## Infrastructure Notes
-
-- **SSH key**: `~/.ssh/id_ed25519_placeholder` — stored in ssh-agent keychain (persistent across reboots)
-- **SSH config**: `~/.ssh/config` routes `github.com` to this key
-- **No env vars needed**: SSH handles auth automatically
-- **GitHub Pages**: free hosting, no server config needed
-
-## Custom Domain (future)
-
-1. Buy domain
-2. Add CNAME record pointing to `placeholderduo.github.io`
-3. In repo Settings → Pages → Custom domain → enter your domain
-4. Create `CNAME` file in the repo root with your domain
