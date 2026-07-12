@@ -202,6 +202,7 @@ body {
 <div class="header">
   <h1><span style="color:#888;">Placeholder</span> Duo</h1>
   <p>Live Band Karaoke — request a song!</p>
+  <p id="connectionMode" style="font-size:12px;color:#888;margin-top:4px;"></p>
 </div>
 
 <form class="form-card" id="requestForm">
@@ -406,17 +407,47 @@ body {
 
   // Detect local API on load
   function detectLocalApi() {
+    // Try local WiFi first (fastest, most reliable)
     fetch(LOCAL_API + '/api/health', { mode: 'cors' })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data && data.status === 'ok') {
           state.useLocalApi = true;
-          console.log('Connected to venue WiFi — using local server');
+          var el = document.getElementById('connectionMode');
+          if (el) el.textContent = 'Connected to venue WiFi';
+          el.style.color = '#2ecc71';
         }
       })
       .catch(function() {
-        state.useLocalApi = false;
-        console.log('Off-venue — using cloud storage');
+        // Try tunnel URL next
+        fetch('tunnel-url.txt')
+          .then(function(r) { return r.text(); })
+          .then(function(u) {
+            var tunnelUrl = u.trim();
+            if (tunnelUrl && tunnelUrl.startsWith('http')) {
+              LOCAL_API = tunnelUrl;
+              fetch(LOCAL_API + '/api/health')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                  if (data && data.status === 'ok') {
+                    state.useLocalApi = true;
+                    var el = document.getElementById('connectionMode');
+                    if (el) el.textContent = 'Connected via relay';
+                    el.style.color = '#ff8800';
+                  }
+                })
+                .catch(function() {
+                  state.useLocalApi = false;
+                  var el = document.getElementById('connectionMode');
+                  if (el) { el.textContent = 'Using cloud storage'; el.style.color = '#888'; }
+                });
+            }
+          })
+          .catch(function() {
+            state.useLocalApi = false;
+            var el = document.getElementById('connectionMode');
+            if (el) { el.textContent = 'Using cloud storage'; el.style.color = '#888'; }
+          });
       });
   }
 
