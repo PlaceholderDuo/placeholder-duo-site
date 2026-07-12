@@ -263,6 +263,7 @@ body {
   'use strict';
 
   var BLOB_URL = 'https://jsonblob.com/api/jsonBlob/019f5394-f14c-7b1b-ba94-c35546262ffa';
+  var LOCAL_API = 'http://rig.local:3300';
   var ADMIN_PASSWORD = 'liveband';
   var POLL_INTERVAL = 5000;
 
@@ -270,7 +271,8 @@ body {
     submissions: [],
     isAdmin: false,
     pollTimer: null,
-    lastModified: 0
+    lastModified: 0,
+    useLocalApi: false
   };
 
   var songLibrary = [
@@ -348,6 +350,33 @@ body {
   });
 
   function fetchAndAppend(name, song, artist, callback) {
+    if (state.useLocalApi) {
+      // Submit directly to the show server on venue WiFi
+      fetch(LOCAL_API + '/api/singer/external-add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ singer: name, song_title: song, song_artist: artist || '' })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          callback(null);
+          if (state.isAdmin) loadSubmissions();
+        } else {
+          callback(new Error(data.error || 'Failed'));
+        }
+      })
+      .catch(function() {
+        // Fall back to jsonblob if local fails
+        state.useLocalApi = false;
+        fetchAndAppendBlob(name, song, artist, callback);
+      });
+    } else {
+      fetchAndAppendBlob(name, song, artist, callback);
+    }
+  }
+
+  function fetchAndAppendBlob(name, song, artist, callback) {
     fetch(BLOB_URL)
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -372,6 +401,22 @@ body {
       })
       .catch(function(err) {
         callback(err);
+      });
+  }
+
+  // Detect local API on load
+  function detectLocalApi() {
+    fetch(LOCAL_API + '/api/health', { mode: 'cors' })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data && data.status === 'ok') {
+          state.useLocalApi = true;
+          console.log('Connected to venue WiFi — using local server');
+        }
+      })
+      .catch(function() {
+        state.useLocalApi = false;
+        console.log('Off-venue — using cloud storage');
       });
   }
 
@@ -431,13 +476,33 @@ body {
   }
 
   function loadSubmissions() {
-    fetch(BLOB_URL + '?_=' + Date.now())
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        state.submissions = data.submissions || [];
-        renderAdmin();
-      })
-      .catch(function() {});
+    if (state.useLocalApi) {
+      // Use local singer queue
+      fetch(LOCAL_API + '/api/singer/queue?_=' + Date.now())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          state.submissions = (data.queue || []).map(function(e) {
+            return {
+              name: e.singer || 'Guest',
+              song: e.song_title || '?',
+              artist: e.song_artist || '',
+              done: false,
+              time: e.timestamp || Date.now(),
+              id: e.id
+            };
+          });
+          renderAdmin();
+        })
+        .catch(function() {});
+    } else {
+      fetch(BLOB_URL + '?_=' + Date.now())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          state.submissions = data.submissions || [];
+          renderAdmin();
+        })
+        .catch(function() {});
+    }
   }
 
   function renderAdmin() {
@@ -475,6 +540,16 @@ body {
   }
 
   function toggleDone(idx) {
+    if (state.useLocalApi) {
+      // Delete from local singer queue
+      var item = state.submissions[idx];
+      if (item && item.id) {
+        fetch(LOCAL_API + '/api/singer/queue/' + item.id, { method: 'DELETE' })
+          .then(function() { loadSubmissions(); })
+          .catch(function() {});
+      }
+      return;
+    }
     state.submissions[idx].done = !state.submissions[idx].done;
     fetch(BLOB_URL, {
       method: 'PUT',
@@ -490,6 +565,12 @@ body {
   });
 
   clearDoneBtn.addEventListener('click', function() {
+    if (state.useLocalApi) {
+      fetch(LOCAL_API + '/api/singer/clear-round', { method: 'POST' })
+        .then(function() { loadSubmissions(); })
+        .catch(function() {});
+      return;
+    }
     state.submissions = state.submissions.filter(function(s) { return !s.done; });
     fetch(BLOB_URL, {
       method: 'PUT',
@@ -510,6 +591,10 @@ body {
   });
 
   console.log('Placeholder Duo — Request a Song ready');
+
+  // Detect if on venue WiFi
+  detectLocalApi();
+
 })();
 </script>
 </body>
