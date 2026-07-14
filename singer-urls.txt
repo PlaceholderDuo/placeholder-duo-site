@@ -1,2 +1,2 @@
 Primary: http://rig.local:3300/singer
-Fallback: http://192.168.0.191:3300/singer
+Fallback: http://192.168.1.102:3300/singer
