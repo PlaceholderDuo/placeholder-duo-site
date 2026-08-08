@@ -34,8 +34,8 @@ Open `index.html` — everything is in one file: HTML + CSS. No build step neede
 
 | What | Search for | Replace with |
 |------|-----------|-------------|
-| Venmo deep link | `venmo://paycharge?...recipient=placeholderduo` | Your Venmo handle |
-| Cash App deep link | `cashapp://cash.app/$placeholderduo` | Your Cash App tag |
+| Venmo universal link | `https://venmo.com/placeholderduo` | Your Venmo handle |
+| Cash App universal link | `https://cash.app/$placeholderduo` | Your Cash App tag |
 | Instagram link | `instagram.com/placeholderduo` | Your handle |
 | TikTok link | `tiktok.com/@placeholderduo` | Your handle |
 | YouTube link | `youtube.com/@placeholderduo` | Your handle |
