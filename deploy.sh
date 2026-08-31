@@ -15,5 +15,5 @@ git commit --allow-empty -m "Update landing page"
 git push origin "$BRANCH"
 
 echo "✓ Pushed to $REPO"
-echo "  Live at: https://placeholderduo.github.io/$REPO/"
+echo "  Live at: https://placeholderduo.github.io/placeholder-duo-site/"
 echo "  (Takes ~1 min for Pages to update)"

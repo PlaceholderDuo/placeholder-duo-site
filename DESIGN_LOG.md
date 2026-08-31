@@ -30,9 +30,9 @@
 - **Before:** Venmo used `venmo://paycharge?txn=pay&recipient=<user>`; Cash App used `cashapp://cash.app/$<tag>`.
 - **Problem:** Both custom URL schemes stopped working (Venmo dropped them in 2024). Tapping opened the apps but landed on the **home tab**, not the profile.
 - **Fix:** Switched to **universal links**:
-  - Venmo → `https://venmo.com/<user>` (opens in-app profile with Pay/Request button; web fallback works).
+  - Venmo → `https://venmo.com/u/<user>` (opens in-app profile with Pay/Request button; web fallback works). **Note:** Must use `/u/` prefix — without it Venmo 302-redirects to `account.venmo.com`, which breaks the app's universal link association and can open Safari instead of the app.
   - Cash App → `https://cash.app/$<tag>` (opens in-app pay screen; web fallback works).
-- **Verified before committing:** `https://venmo.com/<user>` → HTTP 200; `https://venmo.com/<user>/send` → HTTP 404 (deliberately NOT used); `https://cash.app/$<tag>` → HTTP 200.
+- **Verified before committing:** `https://venmo.com/u/<user>` → HTTP 200; `https://venmo.com/<user>` → 302 redirect to `account.venmo.com` (breaks app association — avoid); `https://venmo.com/<user>/send` → HTTP 404 (deliberately NOT used); `https://cash.app/$<tag>` → HTTP 200.
 - Apple is deprioritizing custom URL schemes in favor of universal links; universal links are the reliable pattern going forward.
 
 ### Issues / Blockers
